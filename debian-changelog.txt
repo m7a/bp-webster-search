@@ -1,0 +1,11 @@
+mdvl-websters-dictionary (1.0.1) stable; urgency=medium
+
+  * Fix copyright file.
+
+ -- Linux-Fan, Ma_Sys.ma <Ma_Sys.ma@web.de>  Mon, 17 Feb 2020 12:11:55 +0100
+
+mdvl-websters-dictionary (1.0.0) stable; urgency=medium
+
+  * mdvl-websters-dictionary package created
+
+ -- Linux-Fan <Ma_Sys.ma@web.de>  Mon, 12 Aug 2019 23:01:56 +0200

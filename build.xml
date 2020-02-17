@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="build">
+
+<!-- APPLICATION METADATA -->
+<property name="mdpc.name"    value="mdvl-websters-dictionary"/>
+<property name="mdpc.section" value="doc"/>
+<property name="mdpc.descrs"  value="Webster's unabridged Dictionary 1913"/>
+<property name="mdpc.arch"    value="all"/>
+<property name="mdpc.depends" value="perl"/>
+<property name="mdpc.descrl">
+ Provides utility webster_dict to search the old but still very useful
+ dictionary (American English as of 1913).
+</property>
+<property name="mdpc.copyright.file">
+Files: *
+Copyright: Copyright (c) 2019 Ma_Sys.ma &lt;Ma_Sys.ma@web.de&gt;
+License: GPL-3+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ .
+ On Debian systems, the full text of the GNU General Public License version 3
+ can be found in the file /usr/share/common-licenses/GPL-3
+
+Files: build-index.pl webster-search.pl webster-search.vim
+Copyright: Copyright (c) 2019 David Farrell
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+</property>
+
+<property name="mdpc.file.install">
+webster_dict /usr/bin
+29765-8.txt /usr/share/mdvl-websters-dictionary
+webster-search.vim /usr/share/mdvl-websters-dictionary
+</property>
+
+<!-- PART OF TPL HERE FOR USE IN BUILD -->
+<property environment="env"/>
+<condition property="masysma.internal.includepath.rel" value="${env.MDVL_CI_PHOENIX_ROOT}" else=".."><isset property="env.MDVL_CI_PHOENIX_ROOT"/></condition>
+<property name="masysma.internal.includepath" location="${masysma.internal.includepath.rel}"/>
+
+<!-- SPECIFIC BUILD -->
+<target name="download">
+	<masysma_require_artifact
+		masysmaartifact="webstersunabridg29765gut.zip"
+		masysmaatarget="."
+		masysmaadef="https://www.gutenberg.org/files/29765/29765-8.zip"/>
+</target>
+
+<target name="build" depends="download">
+	<fixcrlf file="29765-8.txt" eol="unix"/>
+	<exec executable="perl">
+		<arg value="-f"/>
+		<arg value="build-index.pl"/>
+		<redirector outputproperty="indexdata">
+			<outputfilterchain>
+				<suffixlines suffix=","/>
+				<striplinebreaks/>
+			</outputfilterchain>
+		</redirector>
+	</exec>
+	<copy file="webster-search.pl" tofile="webster_dict">
+		<filterchain>
+			<tokenfilter>
+				<replacestring
+					from="#&lt;&lt;&lt;INDEX&gt;&gt;&gt;"
+					to="${indexdata}"/>
+			</tokenfilter>
+		</filterchain>
+	</copy>
+</target>
+
+<target name="clean">
+	<delete file="webster_dict"/>
+	<delete file="index.txt"/>
+	<delete file="29765-8.txt"/>
+</target>
+
+<target name="dist-clean" depends="clean"/>
+
+<!-- CI INTEGRATION -->
+<target name="package_triggered" depends="package">
+	<property name="masysma.ci.trigger" value="newver"/>
+</target>
+
+<!-- TPL IMPORT (PARTIALLY GIVEN ABOVE) -->
+<property name="masysma.internal.loadpath" value="${masysma.internal.includepath}/co-build/ant-build-template.xml"/>
+<condition property="masysma.internal.load" value="file://${masysma.internal.loadpath}" else="https://raw.githubusercontent.com/m7a/co-build/master/ant-build-template.xml"><resourceexists><file file="${masysma.internal.loadpath}"/></resourceexists></condition>
+<import><url url="${masysma.internal.load}"/></import>
+
+</project>
